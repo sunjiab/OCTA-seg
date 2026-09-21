@@ -1,0 +1,17 @@
+name: octa
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pytorch=2.1
+  - torchvision=0.16
+  - pytorch-cuda=11.8
+  - numpy
+  - pillow
+  - matplotlib
+  - tqdm
+  - tensorboard
+  - ipykernel
+  - pytest
