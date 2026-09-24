@@ -71,6 +71,9 @@ python octa_oct_fusion/train.py --mode fusion
 # 动脉和静脉扩展
 python octa_oct_fusion/train.py --mode fusion --target GT_Artery
 python octa_oct_fusion/train.py --mode fusion --target GT_Vein
+
+# 大血管扩展
+python octa_oct_fusion/train.py --mode fusion --target GT_LargeVessel
 ```
 
 默认输出目录带有模态、扫描范围、slab、标签和 seed，例如 `runs/fusion_3mm_ILM_OPL_GT_Capillary_seed42`。已有非空目录会拒绝写入；重复实验请指定新的 `--output-dir`。

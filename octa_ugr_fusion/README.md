@@ -24,6 +24,32 @@ clDice 实现依据上述论文的软形态学定义，并参考[作者仓库](h
 
 ## 3. 结构与公式
 
+### 3.1 中文总体结构图
+
+![UGR-Fusion中文总体结构](assets/中文结构图/UGR_图1_总体结构_中文.png)
+
+[高清 PNG](assets/中文结构图/UGR_图1_总体结构_中文.png) · [论文 PDF](assets/中文结构图/UGR_图1_总体结构_中文.pdf) · [可缩放 SVG](assets/中文结构图/UGR_图1_总体结构_中文.svg)
+
+左侧为病例10451的真实 OCTA/OCT ILM-OPL 投影，灰度像素保持不变。蓝色路径产生 OCTA 主预测；绿色路径提取 OCT 五尺度辅助特征；橙色路径计算预测不确定性并限制修正幅度；紫色表示融合结果。图中同时标出了五个尺度、通道数、空间尺寸、跳跃连接、残差聚合和有界 logit 修正。
+
+### 3.2 单尺度门控残差头详图
+
+![门控残差头内部](assets/中文结构图/UGR_图2_门控残差头_中文.png)
+
+[高清 PNG](assets/中文结构图/UGR_图2_门控残差头_中文.png) · [论文 PDF](assets/中文结构图/UGR_图2_门控残差头_中文.pdf) · [可缩放 SVG](assets/中文结构图/UGR_图2_门控残差头_中文.svg)
+
+该图展开 `RefineScale`：OCTA和OCT特征分别经1×1卷积变为16通道，加入绝对差 `|A-O|` 与缩放后的不确定性，得到49通道拼接特征；3×3卷积、GroupNorm和SiLU融合后，分成门控 `g_l` 与有符号残差 `d_l` 两支。两者相乘、上采样并跨尺度平均。
+
+### 3.3 训练损失与模型选择图
+
+![训练损失与模型选择](assets/中文结构图/UGR_图3_训练损失_中文.png)
+
+[高清 PNG](assets/中文结构图/UGR_图3_训练损失_中文.png) · [论文 PDF](assets/中文结构图/UGR_图3_训练损失_中文.pdf) · [可缩放 SVG](assets/中文结构图/UGR_图3_训练损失_中文.svg)
+
+该图区分推理输出与训练监督，展开最终分割损失、OCTA anchor辅助损失、真阳性保留损失和可选soft-clDice。标签只进入损失，不进入模型forward。`L_keep`只约束标签为前景且anchor已经判对的像素；它不保护anchor假阳性，也不保证Recall一定提高。
+
+三张图与 `model.py`、`losses.py` 的默认实现一致。不确定性 `u=4p_A(1-p_A)` 是预测模糊程度的启发式，不是经过校准的错误概率。运行 `python octa_ugr_fusion/draw_architecture_cn.py` 可重画，使用 `--case-id` 切换真实病例。旧英文合并图仍保存在 `assets/ugr_fusion_architecture.*`。
+
 ```mermaid
 flowchart LR
     A[OCTA] --> E[OCTA U-Net encoder]
@@ -95,10 +121,28 @@ python octa_ugr_fusion/train.py --target GT_Capillary --skip-test
 python octa_ugr_fusion/train.py --target GT_Artery --skip-test
 python octa_ugr_fusion/train.py --target GT_Vein --skip-test
 
+# 大血管
+python octa_ugr_fusion/train.py --target GT_LargeVessel --skip-test
+
 # 同一入口的单 OCTA / early fusion 对照
 python octa_ugr_fusion/train.py --model octa --target GT_Capillary --skip-test
 python octa_ugr_fusion/train.py --model early --target GT_Capillary --skip-test
 ```
+
+大血管建议完成同入口的三组 matched controls，以区分新模型增益和不同训练随机过程：
+
+```bash
+# OCTA-only
+python octa_ugr_fusion/train.py --model octa --target GT_LargeVessel --skip-test
+
+# 原始输入级融合
+python octa_ugr_fusion/train.py --model early --target GT_LargeVessel --skip-test
+
+# UGR-Fusion
+python octa_ugr_fusion/train.py --model ugr --target GT_LargeVessel --skip-test
+```
+
+三组默认分别保存到 `runs/octa_GT_LargeVessel_seed42`、`runs/early_GT_LargeVessel_seed42` 和 `runs/ugr_GT_LargeVessel_seed42`。`GT_LargeVessel` 按数据集提供的二值 BMP 独立训练；代码不把它现场计算为 `GT_Artery ∪ GT_Vein`。研究阶段保留 `--skip-test`，先根据验证集冻结方案，再运行不带该参数的正式测试。
 
 默认目录 `runs/ugr_GT_Capillary_seed42`，重复实验必须指定新的 `--output-dir`。不自动覆盖结果。目前没有 resume 参数，修改 epoch 后是重新训练。
 

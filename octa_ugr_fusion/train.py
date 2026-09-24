@@ -19,7 +19,11 @@ HERE = Path(__file__).resolve().parent
 def arguments():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--model", choices=("ugr", "octa", "early"), default="ugr")
-    p.add_argument("--target", choices=("GT_Capillary", "GT_Artery", "GT_Vein"), default="GT_Capillary")
+    p.add_argument(
+        "--target",
+        choices=("GT_Capillary", "GT_Artery", "GT_Vein", "GT_LargeVessel"),
+        default="GT_Capillary",
+    )
     p.add_argument("--data-root", type=Path, default=ROOT / "data/OCTA-500数据集")
     p.add_argument("--output-dir", type=Path)
     p.add_argument("--epochs", type=int, default=100)

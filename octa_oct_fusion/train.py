@@ -25,7 +25,11 @@ def arguments():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--data-root", type=Path, default=HERE.parent / "data/OCTA-500数据集")
     p.add_argument("--mode", choices=("octa", "oct", "fusion"), default="fusion")
-    p.add_argument("--target", choices=("GT_Capillary", "GT_Artery", "GT_Vein"), default="GT_Capillary")
+    p.add_argument(
+        "--target",
+        choices=("GT_Capillary", "GT_Artery", "GT_Vein", "GT_LargeVessel"),
+        default="GT_Capillary",
+    )
     p.add_argument("--scan-size", choices=("3mm", "6mm"), default="3mm")
     p.add_argument("--slab", choices=("ILM_OPL", "FULL", "OPL_BM"), default="ILM_OPL")
     p.add_argument("--output-dir", type=Path)
